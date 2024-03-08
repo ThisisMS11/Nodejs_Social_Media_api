@@ -23,25 +23,9 @@ const UserSchema = new mongoose.Schema({
         minlength: [6, 'password cannot be shorted than 6 words'],
         select: false // to avoid password to come along with our query results.
     },
-    unVerfiedEmail: {
-        type: String,
-        trim: true,
-        match: [
-            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-            'Please add a valid email'
-        ]
-    },
     isVerified: {
         type: Boolean,
         default: false
-    },
-    profilePic: {
-        public_id: {
-            type: String
-        },
-        url: {
-            type: String
-        }
     },
     followers: [{
         type: mongoose.Schema.ObjectId,
@@ -52,8 +36,6 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Users'
     }],
-
-
     verificationToken: String,
     verificationTokenExpire: Date,
 
@@ -63,13 +45,8 @@ const UserSchema = new mongoose.Schema({
     }
 })
 
-
-
-/*In Mongoose, schema.methods is a property that allows you to add instance methods to your Mongoose models. Instance methods are methods that are available on individual documents retrieved from the database */
-
 /*to check whether user input password matches with that of database one or not. */
 UserSchema.methods.matchpassword = async function (password) {
-
     const result = await bcrypt.compare(password, this.password);
     return result;
 }
