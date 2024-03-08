@@ -4,6 +4,14 @@ const ErrorResponse = require('../utils/ErrorResponse.js');
 const bcrypt = require('bcrypt');
 const SendEmail = require('../utils/EmailHandler.js');
 
+
+
+exports.getUserInfo = asyncHandler(async (req, res, next) => {
+    if (req.user)
+        res.status(200).json(req.user);
+});
+
+
 exports.login = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
 
@@ -118,6 +126,78 @@ exports.deleteUser = asyncHandler(async (req, res) => {
     } catch (err) {
         // Handle errors
         console.error('Error deleting user:', err);
+        res.status(500).json({ status: 'error', message: 'Internal server error' });
+    }
+});
+
+
+/* Follow a User */
+exports.followUser = (asyncHandler(async (req, res, next) => {
+    try {
+        const userToFollow = await User.findById(req.params.userId);
+
+        if (!userToFollow) {
+            return next(new errorHandler('User not found', 404));
+        }
+
+        /* checking if whether our user already follows the userToFollow */
+        let followedByUser = req.user.following.some((userid) => userid.equals(req.params.userId));
+
+        if (followedByUser) {
+            return next(new errorHandler('Already Following', 300));
+        }
+
+        userToFollow.followers.push(req.user._id);
+        await userToFollow.save();
+
+        req.user.following.push(userToFollow._id);
+        await req.user.save();
+
+
+        /* follow the user here */
+        res.status(200).send({ status: "success", data: { msg: `you started following ${userToFollow.name}` } });
+
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ status: 'error', message: 'Internal server error' });
+    }
+}));
+
+
+/* Unfollow a User */
+exports.unfollowUser = asyncHandler(async (req, res, next) => {
+    try {
+        const userId = req.params.userId;
+
+        const userToFollow = await User.findById(userId).select('followers');
+        const myself = await User.findById(req.user._id).select('following');
+
+        // check if user exists
+        if (!userToFollow) {
+            return next(new errorHandler('User not found', 404));
+        }
+
+        /* removing that user from the following array */
+        let followedByUser = myself.following.some((userid) => userid.equals(userId));
+
+        if (followedByUser) {
+            myself.following.remove(userId);
+            await myself.save();
+        }
+
+        /* checking if user is already present in the followers list of usertoFollow */
+        followedByUser = userToFollow.followers.some((userid) => userid.equals(req.user._id));
+
+        if (followedByUser) {
+            userToFollow.followers.remove(req.user._id);
+            await userToFollow.save();
+        } else {
+            return res.status(500).json({ message: 'The user is not being followed already.' });
+        }
+
+        res.status(200).send({ status: "success", data: { myself, userToFollow } });
+    } catch (error) {
+        console.error('Error unfollowing user:', error);
         res.status(500).json({ status: 'error', message: 'Internal server error' });
     }
 });
