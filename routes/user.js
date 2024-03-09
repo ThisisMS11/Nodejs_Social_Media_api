@@ -1,7 +1,7 @@
-const express = require('express');
-const router = express.Router();
-const { protect } = require('../middleware/authProtect')
-const { login, register, logout, deleteUser, getUserInfo, followUser, unfollowUser, updateUserInfo, getFollowersAndFollowing } = require('../controllers/user');
+import { Router } from 'express';
+const router = Router();
+import { protect } from '../middleware/authProtect.js';
+import { login, register, logout, deleteUser, getUserInfo, followUser, unfollowUser, updateUserInfo, getFollowersAndFollowing } from '../controllers/user.js';
 
 router.post('/login', login);
 router.post('/register', register);
@@ -15,4 +15,4 @@ router.route('/follow/:userId').put(protect, followUser);
 router.route('/unfollow/:userId').put(protect, unfollowUser);
 router.route('/getFFdetails/').get(protect, getFollowersAndFollowing)
 
-module.exports = router;
+export default router;

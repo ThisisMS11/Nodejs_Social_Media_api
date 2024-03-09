@@ -1,17 +1,17 @@
-const User = require('../models/User.js');
-const asyncHandler = require('../middleware/asyncHandler.js');
-const ErrorResponse = require('../utils/ErrorResponse.js');
-const bcrypt = require('bcrypt');
-const SendEmail = require('../utils/EmailHandler.js');
+import User from '../models/User.js';
+import asyncHandler from '../middleware/asyncHandler.js';
+import ErrorResponse from '../utils/ErrorResponse.js';
+import { genSaltSync, hashSync } from 'bcrypt';
+import SendEmail from '../utils/EmailHandler.js';
 
 
 
-exports.getUserInfo = asyncHandler(async (req, res, next) => {
+export const getUserInfo = asyncHandler(async (req, res, next) => {
     if (req.user)
         res.status(200).json(req.user);
 });
 
-exports.updateUserInfo = asyncHandler(async (req, res, next) => {
+export const updateUserInfo = asyncHandler(async (req, res, next) => {
     let { name, email } = req.body;
 
     // Check if name or email is provided
@@ -44,7 +44,7 @@ exports.updateUserInfo = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: user });
 });
 
-exports.login = asyncHandler(async (req, res, next) => {
+export const login = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -69,7 +69,7 @@ exports.login = asyncHandler(async (req, res, next) => {
 });
 
 
-exports.register = asyncHandler(async (req, res, next) => {
+export const register = asyncHandler(async (req, res, next) => {
 
     let { name, email, password } = req.body;
 
@@ -85,8 +85,8 @@ exports.register = asyncHandler(async (req, res, next) => {
 
     /* creating user in database */
 
-    const salt = bcrypt.genSaltSync(10);
-    password = bcrypt.hashSync(password, salt);
+    const salt = genSaltSync(10);
+    password = hashSync(password, salt);
 
     user = await User.create({ name: name, email: email, password: password });
 
@@ -123,7 +123,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     }
 });
 
-exports.logout = (asyncHandler(async (req, res) => {
+export const logout = (asyncHandler(async (req, res) => {
     /* To set the token cookie to none at the browser */
 
     res.cookie('token', 'none', {
@@ -135,7 +135,7 @@ exports.logout = (asyncHandler(async (req, res) => {
 }));
 
 
-exports.deleteUser = asyncHandler(async (req, res) => {
+export const deleteUser = asyncHandler(async (req, res) => {
     try {
         // Extract email from the request
         const { email } = req.user;
@@ -163,8 +163,7 @@ exports.deleteUser = asyncHandler(async (req, res) => {
 });
 
 
-/* Follow a User */
-exports.followUser = (asyncHandler(async (req, res, next) => {
+export const followUser = (asyncHandler(async (req, res, next) => {
     try {
         const userToFollow = await User.findById(req.params.userId);
 
@@ -196,8 +195,7 @@ exports.followUser = (asyncHandler(async (req, res, next) => {
 }));
 
 
-/* Unfollow a User */
-exports.unfollowUser = asyncHandler(async (req, res, next) => {
+export const unfollowUser = asyncHandler(async (req, res, next) => {
     try {
         const userId = req.params.userId;
 
@@ -235,8 +233,7 @@ exports.unfollowUser = asyncHandler(async (req, res, next) => {
 });
 
 
-/* get details of followers and following */
-exports.getFollowersAndFollowing = asyncHandler(async (req, res, next) => {
+export const getFollowersAndFollowing = asyncHandler(async (req, res, next) => {
     try {
         const myself = await User.findOne({ _id: req.user._id }).populate([
             { path: 'followers', select: 'name email' },

@@ -1,9 +1,10 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken')
-const crypto = require('crypto');
+import { Schema, model } from 'mongoose';
+import { compare } from 'bcrypt';
+import pkg from 'jsonwebtoken';
+const { sign } = pkg;
+import { randomBytes, createHash } from 'crypto';
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new Schema({
     name: {
         type: String,
         required: [true, 'Please add a name'],
@@ -28,11 +29,11 @@ const UserSchema = new mongoose.Schema({
         default: false
     },
     followers: [{
-        type: mongoose.Schema.ObjectId,
+        type: Schema.ObjectId,
         ref: 'Users'
     }],
     following: [{
-        type: mongoose.Schema.ObjectId,
+        type: Schema.ObjectId,
         ref: 'Users'
     }],
     verificationToken: String,
@@ -46,24 +47,24 @@ const UserSchema = new mongoose.Schema({
 
 /*to check whether user input password matches with that of database one or not. */
 UserSchema.methods.matchpassword = async function (password) {
-    const result = await bcrypt.compare(password, this.password);
+    const result = await compare(password, this.password);
     return result;
 }
 
 UserSchema.methods.getJwtToken = function () {
-    return jwt.sign({ id: this._id, password: this.password }, process.env.JWT_SECRET);
+    return sign({ id: this._id, password: this.password }, process.env.JWT_SECRET);
 }
 
 /* To Generate a Random  Verfication Token to further create a url */
 UserSchema.methods.getVerficationtoken = function () {
-    const verificationToken = crypto.randomBytes(20).toString('hex');
+    const verificationToken = randomBytes(20).toString('hex');
 
     // Setting the verificationToken and VerificaitionTokenExpire here
-    this.verificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
+    this.verificationToken = createHash('sha256').update(verificationToken).digest('hex');
     const noOfMinutes = 0.5;
     this.verificationTokenExpire = Date.now() + noOfMinutes * 60 * 1000;
     return verificationToken;
 }
 
 
-module.exports = mongoose.model('Users', UserSchema);
+export default model('Users', UserSchema);

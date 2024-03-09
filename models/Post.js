@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+import { Schema, model } from 'mongoose';
 
-const PostSchema = new mongoose.Schema({
+const PostSchema = new Schema({
     postString: {
         type: String,
         required: [true, 'Please add a title'],
@@ -8,7 +8,7 @@ const PostSchema = new mongoose.Schema({
         maxlength: 5000
     },
     user: {
-        type: mongoose.Schema.ObjectId,
+        type: Schema.ObjectId,
         ref: 'Users',
         required: true
     },
@@ -21,4 +21,4 @@ const PostSchema = new mongoose.Schema({
     toObject: { virtuals: true }
 })
 
-module.exports = mongoose.model('Posts', PostSchema);
+export default model('Posts', PostSchema);

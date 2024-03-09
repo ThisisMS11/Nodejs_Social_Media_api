@@ -1,8 +1,8 @@
-const express = require('express');
-const { protect } = require('../middleware/authProtect')
-const { createNewPost, updatePost, getPost, deletePost, getFollowingPosts } = require('../controllers/post');
+import { Router } from 'express';
+import { protect } from '../middleware/authProtect.js';
+import { createNewPost, updatePost, getPost, deletePost, getFollowingPosts } from '../controllers/post.js';
 
-const router = express.Router();
+const router = Router();
 
 /* CRUD POST*/
 router.route('/').post(protect, createNewPost);
@@ -10,4 +10,4 @@ router.route('/').post(protect, createNewPost);
 router.route('/').get(protect, getFollowingPosts);
 router.route('/:id').get(protect, getPost).put(protect, updatePost).delete(protect, deletePost);
 
-module.exports = router;
+export default router;

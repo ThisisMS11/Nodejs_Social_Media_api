@@ -1,9 +1,10 @@
-const asyncHandler = require('./asyncHandler');
-const errorHandler = require('../utils/ErrorResponse');
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+import asyncHandler from './asyncHandler.js';
+import errorHandler from '../utils/ErrorResponse.js';
+import User from '../models/User.js';
+import pkg from 'jsonwebtoken';
+const { verify } = pkg;
 
-exports.protect = asyncHandler(async (req, res, next) => {
+export const protect = asyncHandler(async (req, res, next) => {
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -17,7 +18,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = verify(token, process.env.JWT_SECRET);
         const user = await User.findOne({ _id: decoded.id, password: decoded.password }).select('-password')
 
         /*if a user is found, the middleware adds the user object to the req object and passes the control to the next middleware in the stack */
