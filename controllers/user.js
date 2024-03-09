@@ -11,6 +11,38 @@ exports.getUserInfo = asyncHandler(async (req, res, next) => {
         res.status(200).json(req.user);
 });
 
+exports.updateUserInfo = asyncHandler(async (req, res, next) => {
+    let { name, email } = req.body;
+
+    // Check if name or email is provided
+    if (!name && !email) {
+        return next(new ErrorResponse('Please provide a name or email to update', 400));
+    }
+
+    // Find the user by id
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        return next(new ErrorResponse('User not found', 404));
+    }
+
+    // Update the user's name and email if provided
+    if (name) {
+        user.name = name;
+    }
+    if (email) {
+        // Check if the new email is already taken by another user
+        const existingUser = await User.findOne({ email: email });
+        if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+            return next(new ErrorResponse('Email is already taken', 400));
+        }
+        user.email = email;
+    }
+
+    // Save the updated user
+    await user.save();
+
+    res.status(200).json({ success: true, data: user });
+});
 
 exports.login = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
@@ -202,3 +234,19 @@ exports.unfollowUser = asyncHandler(async (req, res, next) => {
     }
 });
 
+
+/* get details of followers and following */
+exports.getFollowersAndFollowing = asyncHandler(async (req, res, next) => {
+    try {
+        const myself = await User.findOne({ _id: req.user._id }).populate([
+            { path: 'followers', select: 'name email' },
+            { path: 'following', select: 'name email' }
+        ]);
+
+        res.status(200).json({ status: "success", followers: myself.followers, following: myself.following });
+
+    } catch (error) {
+        console.error('Error getting followers and following:', error);
+        res.status(500).json({ status: 'error', message: 'Internal server error' });
+    }
+});
