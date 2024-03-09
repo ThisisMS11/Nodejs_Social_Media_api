@@ -17,23 +17,22 @@ exports.createNewPost = asyncHandler(async (req, res, next) => {
 
 /* get a Indvidual Post */
 exports.getPost = asyncHandler(async (req, res, next) => {
-    const post = await Post.find({ _id: req.params.postId });
+    const post = await Post.find({ _id: req.params.id });
 
     if (!post) {
-        next(new errorHandler(`No post found with id ${req.params.postId}`, 401));
+        next(new errorHandler(`No post found with id ${req.params.id}`, 401));
     }
 
     res.status(200).send({ success: true, post: post });
 })
 
 
-/* Get all posts */
-// ! implement the user follow following stuff now before actually testing this one .
+/* Get posts from users I follow.*/
 
 exports.getFollowingPosts = asyncHandler(async (req, res, next) => {
     try {
         // Extract follower IDs from req.user.followers (assuming it's an array of ObjectIds)
-        const followerIds = req.user.followers.map((follower) => follower._id);
+        const followerIds = req.user.following.map((follower) => follower._id);
 
         console.log({ followerIds });
 
@@ -57,34 +56,50 @@ exports.getFollowingPosts = asyncHandler(async (req, res, next) => {
 /* delete the post */
 exports.deletePost = asyncHandler(async (req, res, next) => {
     // finding the post
-    const post = await Post.findByIdAndDelete({ _id: req.params.postId });
+    const post = await Post.findOne({ _id: req.params.id });
 
     if (!post) {
-        next(new errorHandler(`No post found with id ${req.params.postId}`, 401));
+        next(new errorHandler(`No post found with id ${req.params.id}`, 401));
     }
 
-    res.status(200).send({ success: true, data: post })
+    if (post.user.toString() !== req.user._id.toString()) {
+        return res.status(401).send({ success: false, data: "You are not authorized to delete this Post." })
+    }
+
+    try {
+        await Post.findOneAndDelete({ _id: req.params.id });
+        res.status(200).send({ success: true, data: `The Post with ${post._id} has been deleted.` })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 })
 
 /* to update a post */
 exports.updatePost = asyncHandler(async (req, res, next) => {
     try {
-        const { postId } = req.params;
+        const { id } = req.params;
         const updatedFields = req.body;
 
-        if (!postId || !updatedFields) {
+        if (!id || !updatedFields) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+        const post = await Post.findOne({ _id: id });
+
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        if (post.user.toString() !== req.user._id.toString()) {
+            return res.status(401).send({ success: false, data: "You are not authorized to update this Post." })
+        }
+
         const updatedPost = await Post.findOneAndUpdate(
-            { _id: postId },
+            { _id: id },
             updatedFields,
             { new: true, runValidators: true } // Return the updated document and run validations
         );
-
-        if (!updatedPost) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
 
         return res.status(200).json({ success: true, data: updatedPost });
     } catch (error) {

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const PostSchema = new mongoose.Schema({
-    PostString: {
+    postString: {
         type: String,
         required: [true, 'Please add a title'],
         trim: true,

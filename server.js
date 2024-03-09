@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 8000
 
 /* importing routes here */
 const user = require('./routes/user');
+const post = require('./routes/post')
 
 app.use(express.json());
 app.use(cors());
@@ -16,6 +17,7 @@ app.use(cors());
 connectDB();
 
 app.use('/api/v1/user', user);
+app.use('/api/v1/post', post);
 
 app.listen(PORT, () => {
     console.log("Server listening ... at port : ", PORT);
