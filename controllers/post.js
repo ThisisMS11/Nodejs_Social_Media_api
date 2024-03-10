@@ -11,7 +11,9 @@ export const createNewPost = asyncHandler(async (req, res, next) => {
 
     newPost = await newPost.save();
 
-    res.status(200).send({ success: true, data: newPost });
+    console.log(newPost.id);
+
+    res.status(200).send({ success: true, data: newPost.id });
 });
 
 export const getPost = asyncHandler(async (req, res, next) => {
@@ -29,7 +31,6 @@ export const getFollowingPosts = asyncHandler(async (req, res, next) => {
         // Extract follower IDs from req.user.followers (assuming it's an array of ObjectIds)
         const followerIds = req.user.following.map((follower) => follower._id);
 
-        console.log({ followerIds });
 
         if (followerIds?.length == 0) {
             return res.status(200).json({ success: true, msg: "You have not followed anyone so far." });
