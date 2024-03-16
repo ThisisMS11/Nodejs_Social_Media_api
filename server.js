@@ -16,6 +16,10 @@ app.use(cors());
 
 connectDB();
 
+app.get('/',(req,res)=>{
+    res.send("Welcome to Social Media API By Mohit Saini")
+})
+
 app.use('/api/v1/user', user);
 app.use('/api/v1/post', post);
 

@@ -4,7 +4,14 @@ Welcome to our Social Media API documentation. This API provides endpoints for u
 
 ---
 
-**Base URL:** `/api/v1/`
+**Base URL:** `https://nodejs-social-media-api-45nj.onrender.com/api/v1/`
+
+#### Demo user : mailtomohit2002@gmail.com
+#### password : Mohit123*
+
+#### Sample posts ids for performing CRUD operation : 65f588283b4d7eac9fa87e8b , 65f5884b3b4d7eac9fa87e8f
+(create more for testing purposes).
+
 
 ## User Routes
 
@@ -29,7 +36,9 @@ Welcome to our Social Media API documentation. This API provides endpoints for u
      - `success` (boolean): Indicates whether the login was successful.
      - `token` (string): JWT token for authenticated user.
 
-**Authentication Required:** YES
+**Authentication Required:** YES (Include Bearer Token in header)
+![](./demo.png)
+
 
 3. **GET /user**
    - Use this endpoint to retrieve user information.
